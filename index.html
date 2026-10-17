@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Pembelajaran PLSV & PtLSV Interaktif - Timbangan Custom</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #f0fdf4;
+            color: #1e293b;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: #15803d;
+            color: white;
+            padding: 1.2rem 2rem;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.3rem;
+        }
+
+        header .author-tag {
+            font-size: 0.95rem;
+            background: rgba(255, 255, 255, 0.2);
+            display: inline-block;
+            padding: 0.4rem 1.2rem;
+            border-radius: 20px;
+            margin-top: 0.4rem;
+            font-weight: 600;
+        }
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            background: #166534;
+            gap: 8px;
+            padding: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active, .tab-btn:hover {
+            background: #052e16;
+            color: white;
+        }
+
+        .main-container {
+            display: flex;
+            flex: 1;
+            padding: 1.5rem;
+            gap: 1.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .tab-content {
+            display: none;
+            width: 100%;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .tab-content.active {
+            display: flex;
+        }
+
+        .card-panel {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid #bbf7d0;
+        }
+
+        .panel-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #15803d;
+            border-bottom: 2px solid #bbf7d0;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Input Controls */
+        .input-group {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            background: #f0fdf4;
+            padding: 1rem;
+            border-radius: 10px;
+            border: 1px solid #86efac;
+            margin-bottom: 1.2rem;
+            flex-wrap: wrap;
+        }
+
+        .input-group input, .input-group select {
+            padding: 0.5rem;
+            font-size: 1rem;
+            border: 2px solid #4ade80;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background-color: #16a34a;
+            color: white;
+        }
+
+        .btn:hover {
+            background-color: #15803d;
+            transform: translateY(-2px);
+        }
+
+        /* Interactive Scale Graphic CSS */
+        .scale-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #fafafa;
+            border: 2px dashed #86efac;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .scale-base {
+            width: 0;
+            height: 0;
+            border-left: 30px solid transparent;
+            border-right: 30px solid transparent;
+            border-bottom: 60px solid #475569;
+            margin-top: -10px;
+        }
+
+        .scale-beam {
+            width: 80%;
+            height: 12px;
+            background: #334155;
+            border-radius: 6px;
+            position: relative;
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-origin: center center;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .scale-pan-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 140px;
+            position: absolute;
+            top: 10px;
+        }
+
+        .scale-pan-wrapper.left { left: -20px; }
+        .scale-pan-wrapper.right { right: -20px; }
+
+        .scale-string {
+            width: 2px;
+            height: 40px;
+            background: #94a3b8;
+        }
+
+        .scale-pan {
+            width: 130px;
+            min-height: 50px;
+            background: #e2e8f0;
+            border: 3px solid #64748b;
+            border-radius: 0 0 20px 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            padding: 6px;
+            align-items: flex-end;
+            justify-content: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Items on Scale */
+        .item-box {
+            width: 26px;
+            height: 26px;
+            background: #2563eb;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+
+        .item-unit {
+            width: 20px;
+            height: 20px;
+            background: #16a34a;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+
+        .status-badge {
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+        }
+        .status-balanced { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+        .status-unbalanced { background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; }
+
+        /* Displays */
+        .solution-box {
+            background: #f0fdf4;
+            border: 1px solid #86efac;
+            border-radius: 10px;
+            padding: 1.2rem;
+            line-height: 1.9;
+            font-size: 1.05rem;
+            margin-top: 1rem;
+        }
+
+        .number-line-container {
+            width: 100%;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        canvas { max-width: 100%; height: auto; }
+
+        /* Concepts & Quiz */
+        .concept-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .concept-card {
+            background: #f0fdf4;
+            border-left: 4px solid #16a34a;
+            padding: 1rem;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .concept-card h4 { color: #15803d; margin-bottom: 0.5rem; }
+
+        .quiz-item { margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #e2e8f0; }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem;
+            margin-top: 0.5rem;
+        }
+
+        .option-label {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            padding: 0.6rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .option-label:hover { background: #e2e8f0; }
+
+        .result-card {
+            display: none;
+            background: #f0fdf4;
+            border: 2px solid #16a34a;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: #16a34a;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 1rem auto;
+        }
+
+        footer {
+            text-align: center;
+            padding: 1.2rem;
+            background-color: #ffffff;
+            border-top: 1px solid #e2e8f0;
+            font-size: 0.95rem;
+            color: #334155;
+            font-weight: 500;
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Media Pembelajaran PLSV & PtLSV Interaktif</h1>
+        <div class="author-tag">Dibuat oleh: Sohrah, S. Pd (Guru Matematika UPTD SMPN 1 Batu Ampar)</div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <div class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('plsv-tab')">⚖️ 1. Simulasi Timbangan PLSV Interaktif</button>
+        <button class="tab-btn" onclick="switchTab('ptlsv-tab')">📉 2. Pertidaksamaan & Garis Bilangan</button>
+        <button class="tab-btn" onclick="switchTab('concept-tab')">📖 3. Rangkuman Materi Lengkap</button>
+        <button class="tab-btn" onclick="switchTab('quiz-tab')">📝 4. Kuis Latihan (10 Soal)</button>
+    </div>
+
+    <div class="main-container">
+
+        <!-- TAB 1: PLSV & TIMBANGAN INTERAKTIF -->
+        <div id="plsv-tab" class="tab-content active">
+            <div class="card-panel">
+                <div class="panel-title">⚖️ Simulasi Timbangan Interaktif PLSV</div>
+                <p style="margin-bottom: 1rem; color: #475569;">
+                    Atur persamaan di piringan kiri dan kanan, lalu uji nilai $x$ untuk melihat apakah timbangan menjadi <strong>SEIMBANG</strong>!
+                </p>
+
+                <!-- Equation Builder Inputs -->
+                <div class="input-group">
+                    <strong>Piringan Kiri:</strong>
+                    <input type="number" id="plsv-a" value="2" min="0" max="8" onchange="updateScale()" style="width: 50px;"> <span>x +</span>
+                    <input type="number" id="plsv-b" value="3" min="0" max="15" onchange="updateScale()" style="width: 50px;">
+                    
+                    <span style="font-weight:bold; font-size:1.2rem; color:#15803d; margin: 0 0.5rem;">=</span>
+                    
+                    <strong>Piringan Kanan:</strong>
+                    <input type="number" id="plsv-c" value="0" min="0" max="8" onchange="updateScale()" style="width: 50px;"> <span>x +</span>
+                    <input type="number" id="plsv-d" value="9" min="0" max="15" onchange="updateScale()" style="width: 50px;">
+                </div>
+
+                <!-- Test Value Input -->
+                <div class="input-group" style="background: #e0f2fe; border-color: #38bdf8;">
+                    <label><strong>Uji Nilai Variabel ($x$): </strong></label>
+                    <input type="number" id="test-x" value="1" oninput="updateScale()" style="width: 70px; font-weight: bold; border-color: #0284c7;">
+                    <button class="btn" style="background:#0284c7;" onclick="autoSolveX()">✨ Cari Nilai x Otomatis</button>
+                </div>
+
+                <!-- Interactive Visual Scale -->
+                <div class="scale-container">
+                    <div id="scale-status" class="status-badge status-unbalanced">⚖️ Timbangan Belum Seimbang</div>
+
+                    <div style="height: 120px; width: 100%; display: flex; justify-content: center; align-items: flex-end; position: relative;">
+                        <div class="scale-beam" id="scale-beam">
+                            <!-- Left Pan -->
+                            <div class="scale-pan-wrapper left">
+                                <div class="scale-string"></div>
+                                <div class="scale-pan" id="left-pan"></div>
+                                <small style="font-weight:bold; margin-top:4px;">Kiri: <span id="left-weight-val">0</span> kg</small>
+                            </div>
+
+                            <!-- Right Pan -->
+                            <div class="scale-pan-wrapper right">
+                                <div class="scale-string"></div>
+                                <div class="scale-pan" id="right-pan"></div>
+                                <small style="font-weight:bold; margin-top:4px;">Kanan: <span id="right-weight-val">0</span> kg</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="scale-base"></div>
+                </div>
+
+                <!-- Step by Step Solution -->
+                <div id="plsv-solution" class="solution-box"></div>
+            </div>
+        </div>
+
+        <!-- TAB 2: PtLSV & GARIS BILANGAN -->
+        <div id="ptlsv-tab" class="tab-content">
+            <div class="card-panel">
+                <div class="panel-title">📉 Kalkulator PtLSV & Visualisasi Garis Bilangan</div>
+                <p style="margin-bottom: 1rem; color: #475569;">
+                    Bentuk umum PtLSV: $ax + b \text{ [tanda] } c$. Masukkan nilai untuk melihat langkah penyelesaian dan grafik garis bilangan penyelesaiannya.
+                </p>
+
+                <div class="input-group">
+                    <input type="number" id="ptlsv-a" value="-3" style="width: 60px;"> <span>x +</span>
+                    <input type="number" id="ptlsv-b" value="4" style="width: 60px;">
+                    <select id="ptlsv-op" style="font-weight: bold;">
+                        <option value="<">&lt;</option>
+                        <option value="<=">&le;</option>
+                        <option value=">">&gt;</option>
+                        <option value=">=">&ge;</option>
+                    </select>
+                    <input type="number" id="ptlsv-c" value="10" style="width: 60px;">
+                    <button class="btn" onclick="solvePtLSV()">🎨 Selesaikan & Gambar Garis</button>
+                </div>
+
+                <div id="ptlsv-solution" class="solution-box"></div>
+
+                <div class="number-line-container">
+                    <h4 style="color:#15803d; margin-bottom: 0.5rem;">Grafik Garis Bilangan Penyelesaian:</h4>
+                    <canvas id="numberLineCanvas" width="600" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: RANGKUMAN MATERI LENGKAP -->
+        <div id="concept-tab" class="tab-content">
+            <div class="card-panel">
+                <div class="panel-title">📖 Materi Lengkap: Persamaan & Pertidaksamaan Linear Satu Variabel</div>
+                
+                <div class="concept-grid">
+                    <div class="concept-card">
+                        <h4>1. Konsep Dasar & Perbedaan</h4>
+                        <p>• <strong>PLSV (Persamaan):</strong> Kalimat terbuka yang dihubungkan tanda sama dengan ($=$) dan variabelnya berpangkat satu.</p>
+                        <p>• <strong>PtLSV (Pertidaksamaan):</strong> Kalimat terbuka yang dihubungkan tanda ketidaksamaan ($<, >, \le, \ge$) dan variabelnya berpangkat satu.</p>
+                    </div>
+
+                    <div class="concept-card">
+                        <h4>2. Sifat Kesetimbangan PLSV</h4>
+                        <p>• Kedua ruas dapat <strong>ditambah/dikurangi</strong> dengan bilangan yang sama.</p>
+                        <p>• Kedua ruas dapat <strong>dikali/dibagi</strong> dengan bilangan yang sama bukan nol tanpa mengubah nilai kebenaran.</p>
+                    </div>
+
+                    <div class="concept-card">
+                        <h4>3. Aturan Khusus PtLSV (PENTING!)</h4>
+                        <p>• Jika kedua ruas dikali atau dibagi dengan <strong>bilangan negatif</strong>, maka <u>tanda pertidaksamaan HARUS DIBALIK</u>!</p>
+                        <p style="background:#dcfce7; padding:0.4rem; border-radius:4px; font-size:0.9rem; margin-top:0.3rem;">
+                            Contoh: $-2x < 6 \implies x > -3$ (Tanda $<$ berubah menjadi $>$)
+                        </p>
+                    </div>
+
+                    <div class="concept-card">
+                        <h4>4. Membaca Garis Bilangan</h4>
+                        <p>• <strong>Bulatan Kosong ($\circ$):</strong> Digunakan untuk tanda $<$ atau $>$ (nilai batas tidak termasuk HP).</p>
+                        <p>• <strong>Bulatan Penuh ($\bullet$):</strong> Digunakan untuk tanda $\le$ atau $\ge$ (nilai batas termasuk HP).</p>
+                        <p>• Panah ke <strong>kanan</strong> untuk $>$/$\ge$, panah ke <strong>kiri</strong> untuk $<$/$\le$.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: KUIS LATIHAN -->
+        <div id="quiz-tab" class="tab-content">
+            <div class="card-panel" style="max-width: 800px; margin: 0 auto; width: 100%;">
+                <div class="panel-title" style="text-align: center;">📝 Kuis Latihan PLSV & PtLSV (10 Soal)</div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <label><strong>Nama Lengkap Siswa:</strong></label>
+                    <input type="text" id="student-name" placeholder="Ketik nama kamu di sini..." style="width: 100%; padding: 0.7rem; font-size: 1rem; border: 2px solid #86efac; border-radius: 8px; margin-top: 0.3rem;">
+                </div>
+
+                <form id="quiz-form">
+                    <div id="quiz-list"></div>
+                    <button type="button" class="btn" style="width: 100%; font-size: 1.1rem; padding: 0.8rem; margin-top: 1rem;" onclick="submitQuiz()">🚀 Kirim Jawaban</button>
+                </form>
+
+                <div class="result-card" id="result-card">
+                    <h3 id="res-student-name"></h3>
+                    <div class="score-circle" id="res-score">0</div>
+                    <h4 id="res-title"></h4>
+                    <p id="res-desc" style="color: #475569; margin-bottom: 1.5rem;"></p>
+                    <button class="btn" onclick="resetQuiz()">🔄 Coba Lagi</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        Media Pembelajaran PLSV & PtLSV Interaktif &copy; 2026 | Dibuat oleh: <strong>Sohrah, S. Pd (Guru Matematika UPTD SMPN 1 Batu Ampar)</strong>
+    </footer>
+
+    <script>
+        /* TAB SWITCHING */
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            const tabMap = { 'plsv-tab': 0, 'ptlsv-tab': 1, 'concept-tab': 2, 'quiz-tab': 3 };
+            document.querySelectorAll('.tab-btn')[tabMap[tabId]].classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+
+            if(tabId === 'plsv-tab') updateScale();
+            if(tabId === 'ptlsv-tab') solvePtLSV();
+        }
+
+        /* 1. INTERACTIVE SCALE LOGIC & PLSV */
+        function updateScale() {
+            let a = Math.max(0, parseInt(document.getElementById('plsv-a').value) || 0);
+            let b = Math.max(0, parseInt(document.getElementById('plsv-b').value) || 0);
+            let c = Math.max(0, parseInt(document.getElementById('plsv-c').value) || 0);
+            let d = Math.max(0, parseInt(document.getElementById('plsv-d').value) || 0);
+            let xVal = parseFloat(document.getElementById('test-x').value) || 0;
+
+            // Render Items on Left Pan
+            let leftPan = document.getElementById('left-pan');
+            leftPan.innerHTML = '';
+            for(let i=0; i<a; i++) {
+                leftPan.innerHTML += `<div class="item-box">x</div>`;
+            }
+            for(let i=0; i<b; i++) {
+                leftPan.innerHTML += `<div class="item-unit">1</div>`;
+            }
+
+            // Render Items on Right Pan
+            let rightPan = document.getElementById('right-pan');
+            rightPan.innerHTML = '';
+            for(let i=0; i<c; i++) {
+                rightPan.innerHTML += `<div class="item-box" style="background:#eab308;">x</div>`;
+            }
+            for(let i=0; i<d; i++) {
+                rightPan.innerHTML += `<div class="item-unit" style="background:#3b82f6;">1</div>`;
+            }
+
+            // Calculate Total Weight
+            let totalLeft = (a * xVal) + b;
+            let totalRight = (c * xVal) + d;
+
+            document.getElementById('left-weight-val').innerText = totalLeft;
+            document.getElementById('right-weight-val').innerText = totalRight;
+
+            // Tilt Angle Beam
+            let diff = totalRight - totalLeft;
+            let tiltAngle = Math.max(-15, Math.min(15, diff * 3)); // Max tilt ±15 deg
+
+            let beam = document.getElementById('scale-beam');
+            beam.style.transform = `rotate(${tiltAngle}deg)`;
+
+            // Counter-rotate pans to keep them upright
+            document.querySelectorAll('.scale-pan-wrapper').forEach(pan => {
+                pan.style.transform = `rotate(${-tiltAngle}deg)`;
+            });
+
+            // Update Status Badge
+            let statusBadge = document.getElementById('scale-status');
+            if (Math.abs(totalLeft - totalRight) < 0.001) {
+                statusBadge.className = "status-badge status-balanced";
+                statusBadge.innerHTML = "🎉 TEPAT & SEIMBANG! Nilai x ini adalah Penyelesaiannya.";
+            } else {
+                statusBadge.className = "status-badge status-unbalanced";
+                statusBadge.innerHTML = "⚖️ Belum Seimbang! Coba ubah nilai uji x.";
+            }
+
+            // Render Math Solution Box
+            renderPLSVSolution(a, b, c, d);
+        }
+
+        function autoSolveX() {
+            let a = parseInt(document.getElementById('plsv-a').value) || 0;
+            let b = parseInt(document.getElementById('plsv-b').value) || 0;
+            let c = parseInt(document.getElementById('plsv-c').value) || 0;
+            let d = parseInt(document.getElementById('plsv-d').value) || 0;
+
+            if (a === c) {
+                alert("Nilai koefisien x di piringan kiri dan kanan sama, tidak ada solusi tunggal.");
+                return;
+            }
+
+            let correctX = (d - b) / (a - c);
+            document.getElementById('test-x').value = Number.isInteger(correctX) ? correctX : correctX.toFixed(2);
+            updateScale();
+        }
+
+        function renderPLSVSolution(a, b, c, d) {
+            let solBox = document.getElementById('plsv-solution');
+            if (a === c) {
+                solBox.innerHTML = "<strong>Analisis Aljabar:</strong> Koefisien $x$ sama pada kedua ruas. Tidak dapat ditentukan penyelesaian tunggal.";
+                return;
+            }
+
+            let netA = a - c;
+            let netD = d - b;
+            let correctX = netD / netA;
+
+            let html = `<strong>Langkah Penyelesaian Aljabar:</strong><br>`;
+            html += `• Persamaan Timbangan: <code>${a}x + ${b} = ${c}x + ${d}</code><br>`;
+            if (c > 0) html += `• Ambil ${c} kotak x dari kedua piringan &rArr; <strong>${netA}x + ${b} = ${d}</strong><br>`;
+            if (b > 0) html += `• Ambil ${b} bola 1 dari kedua piringan &rArr; <strong>${netA}x = ${netD}</strong><br>`;
+            html += `• Bagi berat tersisa dengan ${netA}:<br>`;
+            html += `<span style="color:#15803d; font-weight:bold; font-size:1.15rem;">• Himpunan Penyelesaian (HP): x = ${Number.isInteger(correctX) ? correctX : correctX.toFixed(2)}</span>`;
+
+            solBox.innerHTML = html;
+        }
+
+        /* 2. SOLVE PtLSV & DRAW NUMBER LINE */
+        function solvePtLSV() {
+            let a = parseFloat(document.getElementById('ptlsv-a').value) || 0;
+            let b = parseFloat(document.getElementById('ptlsv-b').value) || 0;
+            let op = document.getElementById('ptlsv-op').value;
+            let c = parseFloat(document.getElementById('ptlsv-c').value) || 0;
+
+            let solBox = document.getElementById('ptlsv-solution');
+
+            if (a === 0) {
+                solBox.innerHTML = "<strong>Error:</strong> Nilai koefisien a tidak boleh 0 pada pertidaksamaan linear.";
+                return;
+            }
+
+            let targetC = c - b;
+            let finalOp = op;
+            let isFlipped = false;
+
+            if (a < 0) {
+                isFlipped = true;
+                const flipMap = { '<': '>', '<=': '>=', '>': '<', '>=': '<=' };
+                finalOp = flipMap[op];
+            }
+
+            let xVal = targetC / a;
+
+            let html = `<strong>Langkah-Langkah Penyelesaian PtLSV:</strong><br>`;
+            html += `• Pertidaksamaan Awal: <code>${a}x + (${b}) ${op.replace('<=','≤').replace('>=','≥')} ${c}</code><br>`;
+            html += `• Kurangkan kedua ruas dengan ${b}:<br>`;
+            html += `&nbsp;&nbsp;&nbsp;${a}x ${op.replace('<=','≤').replace('>=','≥')} ${c} - (${b}) &rArr; <strong>${a}x ${op.replace('<=','≤').replace('>=','≥')} ${targetC}</strong><br>`;
+            
+            if (isFlipped) {
+                html += `⚠️ <strong>PENTING:</strong> Karena pembagi (${a}) bernilai NEGATIF, maka <u>tanda pertidaksamaan DIBALIK</u>!<br>`;
+            }
+            
+            html += `• Bagi kedua ruas dengan ${a}:<br>`;
+            html += `<span style="color:#15803d; font-weight:bold; font-size:1.15rem;">• Himpunan Penyelesaian (HP): x ${finalOp.replace('<=','≤').replace('>=','≥')} ${Number.isInteger(xVal) ? xVal : xVal.toFixed(2)}</span>`;
+
+            solBox.innerHTML = html;
+
+            drawNumberLine(xVal, finalOp);
+        }
+
+        function drawNumberLine(xVal, op) {
+            const canvas = document.getElementById('numberLineCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const startX = 50, endX = 550, y = 50;
+            const midX = (startX + endX) / 2;
+
+            ctx.beginPath();
+            ctx.moveTo(startX, y);
+            ctx.lineTo(endX, y);
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            ctx.fillStyle = '#334155';
+            ctx.beginPath(); ctx.arc(startX, y, 4, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(endX, y, 4, 0, Math.PI*2); ctx.fill();
+
+            let displayVal = Number.isInteger(xVal) ? xVal : parseFloat(xVal.toFixed(1));
+
+            ctx.beginPath();
+            ctx.moveTo(midX, y - 10);
+            ctx.lineTo(midX, y + 10);
+            ctx.stroke();
+
+            ctx.font = '14px Segoe UI';
+            ctx.textAlign = 'center';
+            ctx.fillText(displayVal, midX, y + 30);
+
+            let isRight = op.includes('>');
+            let isClosed = op.includes('=');
+            let arrowEndX = isRight ? endX - 20 : startX + 20;
+
+            ctx.beginPath();
+            ctx.moveTo(midX, y);
+            ctx.lineTo(arrowEndX, y);
+            ctx.strokeStyle = '#16a34a';
+            ctx.lineWidth = 6;
+            ctx.stroke();
+
+            ctx.beginPath();
+            if (isRight) {
+                ctx.moveTo(arrowEndX, y - 8);
+                ctx.lineTo(arrowEndX + 12, y);
+                ctx.lineTo(arrowEndX, y + 8);
+            } else {
+                ctx.moveTo(arrowEndX, y - 8);
+                ctx.lineTo(arrowEndX - 12, y);
+                ctx.lineTo(arrowEndX, y + 8);
+            }
+            ctx.fillStyle = '#16a34a';
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(midX, y, 8, 0, Math.PI * 2);
+            if (isClosed) {
+                ctx.fillStyle = '#16a34a';
+                ctx.fill();
+            } else {
+                ctx.fillStyle = '#ffffff';
+                ctx.fill();
+                ctx.strokeStyle = '#16a34a';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+            }
+        }
+
+        /* 3. QUIZ DATA & LOGIC */
+        const quizData = [
+            { q: "1. Di antara kalimat terbuka berikut, manakah yang merupakan Persamaan Linear Satu Variabel (PLSV)?", options: ["2x + 5 = 11", "x² - 4 = 0", "3x + 2y = 6", "x + 3 < 7"], ans: "2x + 5 = 11" },
+            { q: "2. Nilai x yang memenuhi persamaan 3x - 7 = 14 adalah ...", options: ["5", "6", "7", "8"], ans: "7" },
+            { q: "3. Penyelesaian dari persamaan 2(x + 4) = 18 adalah ...", options: ["5", "7", "9", "11"], ans: "5" },
+            { q: "4. Nilai x yang memenuhi 5x - 3 = 2x + 9 adalah ...", options: ["2", "3", "4", "5"], ans: "4" },
+            { q: "5. Di antara bentuk berikut, manakah yang merupakan Pertidaksamaan Linear Satu Variabel (PtLSV)?", options: ["2x = 8", "4x - 5 > 11", "x² + 2 ≤ 6", "x + y ≥ 3"], ans: "4x - 5 > 11" },
+            { q: "6. Penyelesaian dari pertidaksamaan x + 5 < 12 adalah ...", options: ["x < 7", "x > 7", "x ≤ 7", "x ≥ 7"], ans: "x < 7" },
+            { q: "7. Penyelesaian dari -2x ≤ 8 adalah ... (Ingat aturan perkalian/pembagian negatif)", options: ["x ≤ -4", "x ≥ -4", "x ≤ 4", "x ≥ 4"], ans: "x ≥ -4" },
+            { q: "8. Jika tanda pertidaksamaan adalah '≥' (lebih dari atau sama dengan), maka bulatan pada garis bilangan bernilai ...", options: ["Penuh (Terisi)", "Kosong", "Putus-putus", "Berbentuk Kotak"], ans: "Penuh (Terisi)" },
+            { q: "9. Sebuah persegi panjang memiliki panjang (x + 3) cm dan lebar 5 cm. Jika luasnya 40 cm², maka nilai x adalah ...", options: ["3", "5", "7", "8"], ans: "5" },
+            { q: "10. Umur Ayah 3 kali umur Budi. Jika selisih umur mereka adalah 30 tahun, maka umur Budi adalah ...", options: ["10 tahun", "15 tahun", "20 tahun", "25 tahun"], ans: "15 tahun" }
+        ];
+
+        function renderQuiz() {
+            const list = document.getElementById('quiz-list');
+            list.innerHTML = "";
+            quizData.forEach((item, idx) => {
+                let optionsHTML = "";
+                item.options.forEach(opt => {
+                    optionsHTML += `
+                        <label class="option-label">
+                            <input type="radio" name="q${idx}" value="${opt}"> ${opt}
+                        </label>
+                    `;
+                });
+                list.innerHTML += `
+                    <div class="quiz-item">
+                        <p><strong>${item.q}</strong></p>
+                        <div class="options-grid">${optionsHTML}</div>
+                    </div>
+                `;
+            });
+        }
+
+        function submitQuiz() {
+            let name = document.getElementById('student-name').value.trim();
+            if (!name) { alert("Isi nama kamu terlebih dahulu!"); return; }
+
+            let score = 0;
+            quizData.forEach((item, idx) => {
+                let sel = document.querySelector(`input[name="q${idx}"]:checked`);
+                if (sel && sel.value === item.ans) score += 10;
+            });
+
+            document.getElementById('quiz-form').style.display = 'none';
+            let resCard = document.getElementById('result-card');
+            resCard.style.display = 'block';
+
+            document.getElementById('res-student-name').innerText = `Hasil Kuis: ${name}`;
+            document.getElementById('res-score').innerText = score;
+
+            let title = document.getElementById('res-title');
+            let desc = document.getElementById('res-desc');
+
+            if (score === 100) {
+                title.innerText = "🌟 SEMPURNA! HEBAT SEBALI!";
+                desc.innerText = "Kamu telah menguasai materi PLSV dan PtLSV dengan sangat baik!";
+            } else if (score >= 70) {
+                title.innerText = "👍 BAGUS SEBALI!";
+                desc.innerText = "Hasil yang sangat baik! Tingkatkan terus pemahamanmu.";
+            } else {
+                title.innerText = "💪 TETAP SEMANGAT!";
+                desc.innerText = "Pelajari kembali tab timbangan & garis bilangan di atas, lalu ulangi kuis ini ya!";
+            }
+        }
+
+        function resetQuiz() {
+            document.getElementById('quiz-form').reset();
+            document.getElementById('quiz-form').style.display = 'block';
+            document.getElementById('result-card').style.display = 'none';
+        }
+
+        // Init
+        updateScale();
+        solvePtLSV();
+        renderQuiz();
+    </script>
+</body>
+</html>
